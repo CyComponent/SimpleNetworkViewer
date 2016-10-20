@@ -1,0 +1,17 @@
+body {
+    margin: 0;
+    color: #555555;
+    background: #EEEEEE;
+    font-family: "Helvetica Neue", sans-serif;
+}
+
+.inputs, header {
+    background: #FFFFFF;
+    padding-left: 0.5em;
+    padding-bottom: 1em;
+    padding-top: 1em;
+}
+
+h2 {
+    font-weight: 300;
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NDEx Demo</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="SimpleNetworkViewer.js"></script>
+</head>
+<body>
+
+<header>
+    NDEx Demo: Import a network and show properties
+    <p>
+        NDEx ID:
+        <input type="text" id="ndexId">
+        <button id="import">Import</button>
+    </p>
+</header>
+
+<div id="viewer"></div>
+
+
+<script>
+    const ndexUrl = 'http://www.ndexbio.org/rest/network/';
+
+    document.getElementById("import").addEventListener("click", function () {
+        const ndexId = document.getElementById("ndexId").value;
+        const url = `${ndexUrl}${ndexId}/asCX`
+
+        fetch(url)
+                .then(response => (response.json()))
+                .then(cxData => {
+                    SimpleNetworkViewer.create('viewer', cxData).display();
+                });
+    });
+</script>
+
+</body>
+</html>
