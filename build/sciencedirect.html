@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo for Elsevier</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="SimpleNetworkViewer.js"></script>
+</head>
+<body>
+
+<header>
+    Network Diagrams for this article
+
+
+</header>
+<section class="inputs">
+    <select id="network-selector" onchange="networkSelected()">
+        <option>NDEx Network 1</option>
+        <option>NDEx Network 2</option>
+        <option>NDEx Network 3</option>
+    </select>
+</section>
+
+<div id="viewer"></div>
+
+<section class="inputs">
+    <div>
+        <input type="checkbox" name="label" value="node" checked="checked">Node Labels
+        <input type="checkbox" name="label" value="edge" checked="checked">Edge Labels
+
+        <button id="reset" class="base-button" onclick="reset()">Reset</button>
+    </div>
+</section>
+
+<section class="inputs">
+    <h4>Download as:</h4>
+    <a href="">Network (in CX)</a>
+    <a href="">PNG</a>
+    <a href="">SVG</a>
+</section>
+
+
+<script>
+
+    let selectedIdx = -1;
+    let currentNetworkView = null;
+
+    const ndexUrl = 'http://dev2.ndexbio.org/rest/network/';
+    const networkIds = [
+        'e6075843-8a70-11e6-93d8-0660b7976219',
+        '1cbc2bf4-76b9-11e6-93d8-0660b7976219',
+        '6a46cbea-7eaf-11e6-93d8-0660b7976219'];
+
+    // Load first network
+    networkSelected();
+
+    function reset() {
+        console.log('Reset view!');
+        console.log(currentNetworkView)
+        currentNetworkView.fit();
+    }
+
+    function networkSelected() {
+
+        const selected = document.getElementById("network-selector").selectedIndex;
+        console.log('selected: ' + selected);
+
+        if (selectedIdx !== selected) {
+            selectedIdx = selected;
+
+            const ndexId = networkIds[selectedIdx];
+            const url = `${ndexUrl}${ndexId}/asCX`;
+            console.log('URL: ' + url);
+
+            fetch(url)
+                    .then(response => (response.json()))
+                    .then(cxData => {
+                        currentNetworkView = SimpleNetworkViewer.create('viewer', cxData);
+                        currentNetworkView.display();
+                    });
+        }
+    }
+</script>
+
+</body>
+</html>

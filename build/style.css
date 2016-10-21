@@ -12,6 +12,18 @@ body {
     padding-top: 1em;
 }
 
+#network-selector {
+    width: 50%;
+}
+
 h2 {
     font-weight: 300;
+}
+
+#viewer {
+    min-height: 10em;
+}
+
+.base-button {
+    margin-left: 1em;
 }

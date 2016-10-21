@@ -6,18 +6,10 @@ import uuid from 'node-uuid'
 import CyNetworkViewerComponent from 'cy-network-viewer-component'
 
 
-const Viewport = props =>
-  <div style={props.style}>
-    <CyNetworkViewerComponent
-      {...props}
-      renderer='cytoscape'
-    />
-  </div>
-
 class SimpleNetworkViewer {
 
-  constructor(viewportTagId,  network, networkId=null,
-              width='100%', height='700px', background='teal') {
+  constructor(viewportTagId, network, networkId = null,
+              width = '100%', height = '700px', background = 'teal') {
 
     this.viewportStyle = {
       width: width,
@@ -28,11 +20,14 @@ class SimpleNetworkViewer {
     this.network = this.buildInitialState(network)
     this.tagId = viewportTagId
 
-    if(networkId === null) {
+    if (networkId === null) {
       this.networkId = uuid.v4()
     } else {
       this.networkId = networkId
     }
+
+    console.log("$$$$$$$Initial state:")
+    console.log(this.network.toJS())
   }
 
   buildInitialState(networkInCx) {
@@ -53,9 +48,15 @@ class SimpleNetworkViewer {
     });
   }
 
+  fit() {
+    this.viewportStyle.background = 'blue';
+    this.display()
+  }
+
   display() {
     ReactDOM.render(
-      <Viewport
+      <CyNetworkViewerComponent
+        renderer='cytoscape'
         key={this.tagId}
         networkId={this.networkId}
         network={this.network}
