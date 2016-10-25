@@ -30,6 +30,8 @@
         <input type="checkbox" name="label" value="edge" checked="checked">Edge Labels
 
         <button id="reset" class="base-button" onclick="reset()">Reset</button>
+        <button id="in" class="base-button" onclick="zoomIn()">+</button>
+        <button id="out" class="base-button" onclick="zoomOut()">-</button>
     </div>
 </section>
 
@@ -59,6 +61,13 @@
         console.log('Reset view!');
         console.log(currentNetworkView)
         currentNetworkView.fit();
+    }
+
+    function zoomIn() {
+        currentNetworkView.zoomIn()
+    }
+    function zoomOut() {
+        currentNetworkView.zoomOut();
     }
 
     function networkSelected() {
