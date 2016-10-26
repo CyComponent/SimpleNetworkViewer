@@ -10,6 +10,7 @@
 <body>
 
 <header>
+    <h2>Elsevier's site rebuilt with Network Viewer</h2>
     Network Diagrams for this article
 
 
@@ -26,52 +27,174 @@
 
 <section class="inputs">
     <div>
-        <input type="checkbox" name="label" value="node" checked="checked">Node Labels
-        <input type="checkbox" name="label" value="edge" checked="checked">Edge Labels
+        <input type="checkbox" onchange="showNodeLabel()" name="label" id="node-label" checked="checked">Node Labels
+        <input type="checkbox" onchange="showEdgeLabel()" name="label" id="edge-label" checked="checked">Edge Labels
 
         <button id="reset" class="base-button" onclick="reset()">Reset</button>
         <button id="in" class="base-button" onclick="zoomIn()">+</button>
         <button id="out" class="base-button" onclick="zoomOut()">-</button>
     </div>
+
+    <div>
+        Layout:
+        <select id="layout-selector" onchange="layoutSelected()">
+            <option value="grid">Grid</option>
+            <option value="circle">Circle</option>
+            <option value="cose">COSE</option>
+            <option value="breadthfirst">Breadth First</option>
+        </select>
+    </div>
+    <div>
+        Style:
+        <select id="style-selector" onchange="styleSelected()"></select>
+    </div>
 </section>
 
 <section class="inputs">
-    <h4>Download as:</h4>
-    <a href="">Network (in CX)</a>
-    <a href="">PNG</a>
-    <a href="">SVG</a>
+    Download as:
+    <a id="cx-download">Network (in CX)</a>
+</section>
+
+<section class="inputs">
+    Last Selected Object ID:
+    <h2 id="selected-obj"></h2>
 </section>
 
 
 <script>
 
     let selectedIdx = -1;
+    let selectedLayout = -1;
+    let selectedStyle = -1;
     let currentNetworkView = null;
 
+    const styleFile = 'styles.json';
     const ndexUrl = 'http://dev2.ndexbio.org/rest/network/';
     const networkIds = [
         'e6075843-8a70-11e6-93d8-0660b7976219',
         '1cbc2bf4-76b9-11e6-93d8-0660b7976219',
         '6a46cbea-7eaf-11e6-93d8-0660b7976219'];
 
+    let visualStyle = {};
+    const styleMap = {};
+
+    function selectNodes(nodeIds, nodeProps) {
+        console.log('====== Custom node select function called! ========');
+        console.log('Selected Node ID: ' + nodeIds)
+        const selectedElm = document.getElementById("selected-obj");
+
+        const firstNode = nodeIds[0]
+        const nodeData = nodeProps[firstNode]
+
+
+        const keys = Object.keys(nodeData);
+
+        const data = keys.map(key => {
+            return '<li>' + key + ' = ' + nodeData[key] + '</li>';
+        });
+
+        selectedElm.innerHTML = '<ul>' + data + '</ul>';
+    }
+
+
+    function selectEdges(edgeIds) {
+        console.log('====== Custom edge select function called! ========');
+        console.log('Selected Edge ID: ' + edgeIds)
+    }
+
+    // Then use it as a custom handler
+    const custom = {
+        selectNodes: selectNodes,
+        selectEdges: selectEdges
+    };
+
+    function loadStyles(url) {
+        fetch(url)
+                .then(response => (response.json()))
+                .then(styles => {
+                    const styleSelector = document.getElementById("style-selector");
+                    styles.forEach(entry => {
+                        const option = document.createElement('option');
+                        option.text = option.value = entry.title;
+                        styleSelector.add(option, 0);
+
+                        styleMap[entry.title] = entry.style;
+                    });
+
+                    visualStyle = {
+                        style: styleMap['default']
+                    };
+                    styleSelector.value = 'default';
+                });
+    }
+
+    loadStyles(styleFile);
+
     // Load first network
     networkSelected();
 
-    function reset() {
-        console.log('Reset view!');
-        console.log(currentNetworkView)
-        currentNetworkView.fit();
+    function reset() { currentNetworkView.fit(); }
+    function zoomIn() { currentNetworkView.zoomIn(); }
+    function zoomOut() { currentNetworkView.zoomOut(); }
+
+    function showNodeLabel() {
+        updateStyle('node', document.getElementById("node-label").checked, 'data(name)')
     }
 
-    function zoomIn() {
-        currentNetworkView.zoomIn()
+    function showEdgeLabel() {
+        updateStyle('edge', document.getElementById("edge-label").checked, 'data(interaction)')
     }
-    function zoomOut() {
-        currentNetworkView.zoomOut();
+
+
+    function updateStyle(target, show, val) {
+        console.log('Label: ' + show);
+
+        let labelVal = null
+        if(show) {
+            labelVal = val;
+        }
+
+        visualStyle.style.filter(entry => {
+            if(entry.selector === target) {
+                entry.css['label'] = labelVal
+                entry.css['content'] = labelVal
+            }
+        });
+
+        currentNetworkView.applyStyle(visualStyle)
+    }
+
+
+    function layoutSelected() {
+        const element = document.getElementById("layout-selector")
+        const layout = element.selectedIndex;
+
+        if (selectedLayout !== layout) {
+            selectedLayout = layout;
+            const val = element.options[layout].value;
+            console.log('selected: ' + val);
+            currentNetworkView.applyLayout(val);
+        }
+    }
+
+    function styleSelected() {
+        const element = document.getElementById("style-selector")
+        const idx = element.selectedIndex;
+
+        if (selectedStyle !== idx) {
+            selectedStyle = idx;
+            const styleName = element.options[idx].value;
+            console.log('selected: ' + styleName);
+            const vs = {
+                style: styleMap[styleName]
+            }
+
+            visualStyle = vs;
+            currentNetworkView.applyStyle(vs);
+        }
     }
 
     function networkSelected() {
-
         const selected = document.getElementById("network-selector").selectedIndex;
         console.log('selected: ' + selected);
 
@@ -85,11 +208,26 @@
             fetch(url)
                     .then(response => (response.json()))
                     .then(cxData => {
-                        currentNetworkView = SimpleNetworkViewer.create('viewer', cxData);
-                        currentNetworkView.display();
+
+
+                        console.log("CUSTOM")
+                        console.log(custom)
+
+                        currentNetworkView = SimpleNetworkViewer
+                                .create('viewer', cxData, '100%', '800px', '#EFEFEF');
+                        currentNetworkView.setHandlers(custom);
+
+                        currentNetworkView.applyStyle(visualStyle);
+
+                        // Update link
+                        const downloadLink = document.getElementById("cx-download")
+
+                        downloadLink.setAttribute('href', url);
+                        downloadLink.setAttribute('download', ndexId + '.cx');
                     });
         }
     }
+
 </script>
 
 </body>
