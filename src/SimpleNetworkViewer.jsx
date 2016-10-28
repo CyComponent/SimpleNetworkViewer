@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-
-import CyNetworkViewerComponent from 'cy-network-viewer-component'
+import CyViewer from 'cy-viewer'
 
 
 class SimpleNetworkViewer {
@@ -22,29 +21,33 @@ class SimpleNetworkViewer {
 
   }
 
+
   setHandlers(eventHandlers) {
     console.log('@@CONST:  original handlers')
     console.log(eventHandlers)
 
+    const commandFinished = (lastCommand, status) => {
+      console.log("* Last Command: " + lastCommand);
+      this.command = null;
+    };
+
+    eventHandlers.commandFinished = commandFinished;
     this.handlers = eventHandlers
   }
 
   fit() {
     this.command = 'fit'
     this.display()
-    this.command = null
   }
 
   zoomIn() {
     this.command = 'zoomIn'
     this.display()
-    this.command = null
   }
 
   zoomOut() {
     this.command = 'zoomOut'
     this.display()
-    this.command = null
   }
 
   applyStyle(visualStyle) {
@@ -62,7 +65,7 @@ class SimpleNetworkViewer {
     console.log(this.handlers)
 
     ReactDOM.render(
-      <CyNetworkViewerComponent
+      <CyViewer
         key={this.tagId}
         cxNetwork={this.cxNetwork}
         style={this.viewportStyle}

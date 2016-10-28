@@ -15,6 +15,7 @@
         NDEx ID:
         <input type="text" id="ndexId">
         <button id="import">Import</button>
+        <button id="layout">Apply Layout</button>
     </p>
 </header>
 
@@ -24,6 +25,15 @@
 <script>
     const ndexUrl = 'http://www.ndexbio.org/rest/network/';
 
+    let networkView = null;
+
+    document.getElementById("layout").addEventListener("click", function () {
+        if(networkView !== null) {
+            networkView.applyLayout('circle')
+        }
+    });
+
+
     document.getElementById("import").addEventListener("click", function () {
         const ndexId = document.getElementById("ndexId").value;
         const url = `${ndexUrl}${ndexId}/asCX`
@@ -31,7 +41,8 @@
         fetch(url)
                 .then(response => (response.json()))
                 .then(cxData => {
-                    SimpleNetworkViewer.create('viewer', cxData).display();
+                    networkView = SimpleNetworkViewer.create('viewer', cxData);
+                    networkView.display()
                 });
     });
 </script>
